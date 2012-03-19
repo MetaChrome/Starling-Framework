@@ -21,6 +21,8 @@ package starling.display
     import starling.events.Event;
     import starling.events.EventDispatcher;
     import starling.events.TouchEvent;
+	import shared.Util;
+	import shared.render.starling.Sprite;
     
     /** Dispatched when an object is added to a parent. */
     [Event(name="added", type="starling.events.Event")]
@@ -130,6 +132,9 @@ package starling.display
         
         protected static var sRectCount:int = 0;
         
+ 
+		protected var mScrollRect:Rectangle;
+		protected var mRenderingScrollRectTexture:Boolean;
         /** @private */ 
         public function DisplayObject()
         {
@@ -174,7 +179,12 @@ package starling.display
                 if (mPivotX != 0.0 || mPivotY != 0.0) resultMatrix.translate(-mPivotX, -mPivotY);
                 if (mScaleX != 1.0 || mScaleY != 1.0) resultMatrix.scale(mScaleX, mScaleY);
                 if (mRotation != 0.0)                 resultMatrix.rotate(mRotation);
-                if (mX != 0.0 || mY != 0.0)           resultMatrix.translate(mX, mY);
+				if (mScrollRect) {
+               		if (mX != 0.0 || mY != 0.0) resultMatrix.translate(mX-mScrollRect.x, mY-mScrollRect.y);
+					else resultMatrix.translate(-mScrollRect.x,-mScrollRect.y);
+				} else if (mX != 0.0 || mY != 0.0) {
+					resultMatrix.translate(mX, mY);
+				}
                 
                 return resultMatrix;
             }
@@ -227,7 +237,7 @@ package starling.display
             currentObject = this;
             
             while (currentObject != commonParent)
-            {
+            {	
                 currentObject.getTransformationMatrix(currentObject.mParent, sHelperMatrix);
                 resultMatrix.concat(sHelperMatrix);
                 currentObject = currentObject.parent;
@@ -458,5 +468,8 @@ package starling.display
         /** The stage the display object is connected to, or null if it is not connected 
          *  to a stage. */
         public function get stage():Stage { return this.root as Stage; }
+ 
+		public function get scrollRect():Rectangle { return mScrollRect;}
+		public function set scrollRect(value:Rectangle):void { mScrollRect = value; }
     }
 }

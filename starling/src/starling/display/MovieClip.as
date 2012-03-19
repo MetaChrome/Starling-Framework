@@ -40,7 +40,7 @@ package starling.display
      *  an event of type "Event.COMPLETE" whenever it has displayed its last frame.</p>
      *  
      *  @see starling.textures.TextureAtlas
-     */    
+     */   
     public class MovieClip extends Image implements IAnimatable
     {
         private var mTextures:Vector.<Texture>;

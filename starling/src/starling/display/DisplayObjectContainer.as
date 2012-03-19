@@ -19,6 +19,9 @@ package starling.display
     import starling.errors.AbstractClassError;
     import starling.events.Event;
     import starling.utils.transformCoords;
+	import starling.core.Starling;
+	import starling.textures.RenderTexture;
+	import starling.display.Image;
     
     /**
      *  A DisplayObjectContainer represents a collection of display objects.
@@ -66,7 +69,7 @@ package starling.display
         /** Helper objects. */
         private static var sHelperMatrix:Matrix = new Matrix();
         private static var sHelperPoint:Point = new Point();
-        
+        private static var sHelperRect:Rectangle=new Rectangle();
         // construction
         
         /** @private */
@@ -247,31 +250,53 @@ package starling.display
                 
                 return resultRect;
             }
-            else if (numChildren == 1)
-            {
-                return mChildren[0].getBounds(targetSpace, resultRect);
-            }
-            else
-            {
-                var minX:Number = Number.MAX_VALUE, maxX:Number = -Number.MAX_VALUE;
-                var minY:Number = Number.MAX_VALUE, maxY:Number = -Number.MAX_VALUE;
-                
-                for (var i:int=0; i<numChildren; ++i)
-                {
-                    mChildren[i].getBounds(targetSpace, resultRect);
-                    minX = minX < resultRect.x ? minX : resultRect.x;
-                    maxX = maxX > resultRect.right ? maxX : resultRect.right;
-                    minY = minY < resultRect.y ? minY : resultRect.y;
-                    maxY = maxY > resultRect.bottom ? maxY : resultRect.bottom;
-                }
-                
-                resultRect.x = minX;
-                resultRect.y = minY;
-                resultRect.width  = maxX - minX;
-                resultRect.height = maxY - minY;
-                
+            else {
+				if(scrollRect) 
+				{
+					getTransformationMatrix(targetSpace, sHelperMatrix);
+					transformCoords(sHelperMatrix, scrollRect.x, scrollRect.y, sHelperPoint);
+					var scrollRectBounds:Rectangle=new Rectangle();
+					scrollRectBounds.x = sHelperPoint.x;
+					scrollRectBounds.y = sHelperPoint.y;
+					transformCoords(sHelperMatrix, scrollRect.x + scrollRect.width, scrollRect.y + scrollRect.height, sHelperPoint);
+					scrollRectBounds.width = sHelperPoint.x - scrollRectBounds.x;
+					resultRect.height = sHelperPoint.y - scrollRectBounds.y;
+				}
+				if (numChildren == 1)
+	            {
+	                mChildren[0].getBounds(targetSpace, resultRect);
+	            }
+	            else
+	            {
+	                var minX:Number = Number.MAX_VALUE, maxX:Number = -Number.MAX_VALUE;
+	                var minY:Number = Number.MAX_VALUE, maxY:Number = -Number.MAX_VALUE;
+	                
+	                for (var i:int=0; i<numChildren; ++i)
+	                {
+	                    mChildren[i].getBounds(targetSpace, resultRect);
+	                    minX = minX < resultRect.x ? minX : resultRect.x;
+	                    maxX = maxX > resultRect.right ? maxX : resultRect.right;
+	                    minY = minY < resultRect.y ? minY : resultRect.y;
+	                    maxY = maxY > resultRect.bottom ? maxY : resultRect.bottom;
+	                }
+	                resultRect.x = minX;
+	                resultRect.y = minY;
+	                resultRect.width  = maxX - minX;
+	                resultRect.height = maxY - minY;
+	            }    
+				if(scrollRect) 
+				{
+					var newResultRect:Rectangle=new Rectangle();
+					newResultRect.x = resultRect.x < scrollRectBounds.x ? scrollRectBounds.x : resultRect.x;
+					newResultRect.y = resultRect.y < scrollRectBounds.y ? scrollRectBounds.y : resultRect.y;
+					newResultRect.width = resultRect.x + resultRect.width > scrollRectBounds.x + scrollRectBounds.width ? 
+						(scrollRectBounds.x + scrollRectBounds.width) - newResultRect.x : (resultRect.x + resultRect.width) - newResultRect.x;
+					newResultRect.height = resultRect.y + resultRect.height > scrollRectBounds.y + scrollRectBounds.height ? 
+						(scrollRectBounds.y + scrollRectBounds.height) - newResultRect.y : (resultRect.y + resultRect.height) - newResultRect.y;
+					resultRect = newResultRect;
+				}
                 return resultRect;
-            }                
+			}            
         }
         
         /** @inheritDoc */
@@ -279,7 +304,9 @@ package starling.display
         {
             if (forTouch && (!visible || !touchable))
                 return null;
-            
+            if(scrollRect) {
+				if(!scrollRect.containsPoint(localPoint)) return null;
+			}
             var localX:Number = localPoint.x;
             var localY:Number = localPoint.y;
             
@@ -301,6 +328,36 @@ package starling.display
         /** @inheritDoc */
         public override function render(support:RenderSupport, alpha:Number):void
         {
+			if(mScrollRect && !mRenderingScrollRectTexture)
+			{
+				getTransformationMatrix(stage,sHelperMatrix);
+				var yTransform:Point=sHelperMatrix.deltaTransformPoint(new Point(1,0));
+				//var rotation:Number=Math.atan2(yTransform.y,yTransform.x)-Math.PI/2;
+				if(yTransform.y==0) {
+					getBounds(stage,sHelperRect);
+					Starling.context.setScissorRectangle(sHelperRect);
+				} else {
+					mRenderingScrollRectTexture=true;
+					var xTransform:Point=sHelperMatrix.deltaTransformPoint(new Point(0,1));
+					var stageScaleX:Number=xTransform.length;
+					var stageScaleY:Number=yTransform.length;
+					var renderTexture:RenderTexture=new RenderTexture(mScrollRect.width*stageScaleX,mScrollRect.height*stageScaleY);
+					function drawingBlock():void {
+						mSupport.pushMatrix();
+						mSupport.scaleMatrix(scaleX,scaleY);
+						mSupport.translateMatrix(-scrollRect.x,-scrollRect.y);
+						render(mSupport,1.0);
+						mSupport.popMatrix();
+					}
+					renderTexture.drawBundled(drawingBlock);
+					var image:Image=new Image(renderTexture);
+					support.pushMatrix();
+					support.scaleMatrix(1/stageScaleX,1/stageScaleY);
+					image.render(support,alpha);
+					support.popMatrix();
+					return;
+				}
+			}
             alpha *= this.alpha;
             var numChildren:int = mChildren.length;
             
@@ -313,8 +370,16 @@ package starling.display
                     support.transformMatrix(child);
                     child.render(support, alpha);
                     support.popMatrix();
+					if(mScrollRect && !mRenderingScrollRectTexture && support.scissorRectangleChanged) {
+						Starling.context.setScissorRectangle(sHelperRect);
+						support.scissorRectangleChanged=false;
+					}
                 }
             }
+			if(mScrollRect && !mRenderingScrollRectTexture) {
+				support.scissorRectangleChanged=true;
+				Starling.context.setScissorRectangle(null);
+			}
         }
         
         /** Dispatches an event on all children (recursively). The event must not bubble. */

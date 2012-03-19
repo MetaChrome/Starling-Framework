@@ -36,10 +36,9 @@ package starling.core
         
         private var mQuadBatches:Vector.<QuadBatch>;
         private var mCurrentQuadBatchID:int;
-        
+        private var mScissorRectangleChanged:Boolean;
         /** Helper object. */
         private static var sMatrixCoords:Vector.<Number> = new Vector.<Number>(16, true);
-        
         // construction
         
         /** Creates a new RenderSupport object with an empty matrix stack. */
@@ -229,5 +228,8 @@ package starling.core
                 Color.getBlue(rgb)  / 255.0,
                 alpha);
         }
+		
+		public function get scissorRectangleChanged():Boolean { return mScissorRectangleChanged; }
+		public function set scissorRectangleChanged(value:Boolean):void { mScissorRectangleChanged=value; }
     }
 }

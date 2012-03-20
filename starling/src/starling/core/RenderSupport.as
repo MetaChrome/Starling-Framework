@@ -37,7 +37,6 @@ package starling.core
         
         private var mQuadBatches:Vector.<QuadBatch>;
         private var mCurrentQuadBatchID:int;
-        private var mScissorRectChanged:Boolean;
 		private var mPreviousScissorRect:Rectangle;
 		private var mRootDisplayObject:DisplayObject;
         /** Helper object. */

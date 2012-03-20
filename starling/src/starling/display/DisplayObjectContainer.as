@@ -252,17 +252,6 @@ package starling.display
                 return resultRect;
             }
             else {
-				if(mScrollRect!=null) 
-				{
-					getTransformationMatrix(targetSpace, sHelperMatrix);
-					transformCoords(sHelperMatrix, mScrollRect.x, mScrollRect.y, sHelperPoint);
-					var scrollRectBounds:Rectangle=new Rectangle();
-					scrollRectBounds.x = sHelperPoint.x;
-					scrollRectBounds.y = sHelperPoint.y;
-					transformCoords(sHelperMatrix, mScrollRect.x + mScrollRect.width, mScrollRect.y + mScrollRect.height, sHelperPoint);
-					scrollRectBounds.width = sHelperPoint.x - scrollRectBounds.x;
-					scrollRectBounds.height = sHelperPoint.y - scrollRectBounds.y;
-				}
 				if (numChildren == 1)
 	            {
 	                mChildren[0].getBounds(targetSpace, resultRect);
@@ -287,6 +276,14 @@ package starling.display
 	            }    
 				if(mScrollRect!=null)
 				{
+					getTransformationMatrix(targetSpace, sHelperMatrix);
+					transformCoords(sHelperMatrix, mScrollRect.x, mScrollRect.y, sHelperPoint);
+					var scrollRectBounds:Rectangle=new Rectangle();
+					scrollRectBounds.x = sHelperPoint.x;
+					scrollRectBounds.y = sHelperPoint.y;
+					transformCoords(sHelperMatrix, mScrollRect.x + mScrollRect.width, mScrollRect.y + mScrollRect.height, sHelperPoint);
+					scrollRectBounds.width = sHelperPoint.x - scrollRectBounds.x;
+					scrollRectBounds.height = sHelperPoint.y - scrollRectBounds.y;
 					Util.getSmallestRect(resultRect,scrollRectBounds,resultRect);
 				}
                 return resultRect;

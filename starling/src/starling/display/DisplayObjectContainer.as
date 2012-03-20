@@ -295,8 +295,8 @@ package starling.display
         {
             if (forTouch && (!visible || !touchable))
                 return null;
-            if(scrollRect) {
-				if(!scrollRect.containsPoint(localPoint)) return null;
+            if(mScrollRect) {
+				if(!mScrollRect.containsPoint(localPoint)) return null;
 			}
             var localX:Number = localPoint.x;
             var localY:Number = localPoint.y;
@@ -335,7 +335,7 @@ package starling.display
 					support.translateMatrix(-mScrollRect.x, -mScrollRect.y);
 					Starling.context.setScissorRectangle(bounds);
 				} else {
-					//not tested as it probably needs to be done with masks instead
+					//not tested as it needs to be done with masks instead
 					mRenderingScrollRectTexture=true;
 					var xTransform:Point=sHelperMatrix.deltaTransformPoint(new Point(0,1));
 					var stageScaleX:Number=xTransform.length;

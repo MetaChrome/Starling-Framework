@@ -338,6 +338,7 @@ package starling.display
 					support.translateMatrix(-mScrollRect.x, -mScrollRect.y);
 					Starling.context.setScissorRectangle(bounds);
 				} else {
+					//not tested as it probably needs to be done with masks instead
 					mRenderingScrollRectTexture=true;
 					var xTransform:Point=sHelperMatrix.deltaTransformPoint(new Point(0,1));
 					var stageScaleX:Number=xTransform.length;

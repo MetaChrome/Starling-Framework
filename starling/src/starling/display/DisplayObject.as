@@ -197,7 +197,7 @@ package starling.display
                 {
                     currentObject.getTransformationMatrix(currentObject.mParent, sHelperMatrix);
                     resultMatrix.concat(sHelperMatrix);
-                    currentObject = currentObject.parent;
+                    currentObject = currentObject.mParent;
                 }
                 
                 return resultMatrix;
@@ -219,12 +219,12 @@ package starling.display
             while (currentObject)
             {
                 sAncestors.push(currentObject);
-                currentObject = currentObject.parent;
+                currentObject = currentObject.mParent;
             }
             
             currentObject = targetSpace;
             while (currentObject && sAncestors.indexOf(currentObject) == -1)
-                currentObject = currentObject.parent;
+                currentObject = currentObject.mParent;
             
             if (currentObject == null)
                 throw new ArgumentError("Object not connected to target");
@@ -239,7 +239,7 @@ package starling.display
             {	
                 currentObject.getTransformationMatrix(currentObject.mParent, sHelperMatrix);
                 resultMatrix.concat(sHelperMatrix);
-                currentObject = currentObject.parent;
+                currentObject = currentObject.mParent;
             }
             
             // 3. now move up from target until we reach the common parent
@@ -250,7 +250,7 @@ package starling.display
             {
                 currentObject.getTransformationMatrix(currentObject.mParent, sHelperMatrix);
                 sTargetMatrix.concat(sHelperMatrix);
-                currentObject = currentObject.parent;
+                currentObject = currentObject.mParent;
             }
             
             // 4. now combine the two matrices
@@ -293,7 +293,7 @@ package starling.display
             {
                 currentObject.getTransformationMatrix(currentObject.mParent, sHelperMatrix);
                 sTargetMatrix.concat(sHelperMatrix);
-                currentObject = currentObject.parent;
+                currentObject = currentObject.mParent;
             }            
             return sTargetMatrix.transformPoint(localPoint);
         }
@@ -308,7 +308,7 @@ package starling.display
             {
                 currentObject.getTransformationMatrix(currentObject.mParent, sHelperMatrix);
                 sTargetMatrix.concat(sHelperMatrix);
-                currentObject = currentObject.parent;
+                currentObject = currentObject.mParent;
             }
             sTargetMatrix.invert();
             return sTargetMatrix.transformPoint(globalPoint);
@@ -402,7 +402,7 @@ package starling.display
         public function get root():DisplayObject
         {
             var currentObject:DisplayObject = this;
-            while (currentObject.parent) currentObject = currentObject.parent;
+            while (currentObject.mParent) currentObject = currentObject.mParent;
             return currentObject;
         }
         

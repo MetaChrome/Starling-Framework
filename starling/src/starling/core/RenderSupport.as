@@ -17,6 +17,7 @@ package starling.core
     import starling.events.Event;
     import starling.textures.Texture;
     import starling.utils.*;
+	import starling.core.Starling;
 
     /** A class that contains helper methods simplifying Stage3D rendering.
      *
@@ -36,7 +37,9 @@ package starling.core
         
         private var mQuadBatches:Vector.<QuadBatch>;
         private var mCurrentQuadBatchID:int;
-        private var mScissorRectangleChanged:Boolean;
+        private var mScissorRectChanged:Boolean;
+		private var mPreviousScissorRect:Rectangle;
+		private var mRootDisplayObject:DisplayObject;
         /** Helper object. */
         private static var sMatrixCoords:Vector.<Number> = new Vector.<Number>(16, true);
         // construction
@@ -228,8 +231,9 @@ package starling.core
                 Color.getBlue(rgb)  / 255.0,
                 alpha);
         }
-		
-		public function get scissorRectangleChanged():Boolean { return mScissorRectangleChanged; }
-		public function set scissorRectangleChanged(value:Boolean):void { mScissorRectangleChanged=value; }
+		public function set previousScissorRect(value:Rectangle):void { mPreviousScissorRect=value; }
+		public function get previousScissorRect():Rectangle { return mPreviousScissorRect; }
+		public function set rootDisplayObject(value:DisplayObject):void { mRootDisplayObject=value; }
+		public function get rootDisplayObject():DisplayObject { return mRootDisplayObject; }
     }
 }

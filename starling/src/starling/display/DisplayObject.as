@@ -21,8 +21,6 @@ package starling.display
     import starling.events.Event;
     import starling.events.EventDispatcher;
     import starling.events.TouchEvent;
-	import shared.Util;
-	import shared.render.starling.Sprite;
     
     /** Dispatched when an object is added to a parent. */
     [Event(name="added", type="starling.events.Event")]
@@ -135,6 +133,7 @@ package starling.display
  
 		protected var mScrollRect:Rectangle;
 		protected var mRenderingScrollRectTexture:Boolean;
+		public var debug:Boolean;
         /** @private */ 
         public function DisplayObject()
         {

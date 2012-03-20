@@ -179,6 +179,7 @@ package starling.core
             mLastFrameTimestamp = getTimer() / 1000.0;
             mPrograms = new Dictionary();
             mSupport  = new RenderSupport();
+			mSupport.rootDisplayObject=mStage;
             
             // register touch/mouse event handlers            
             for each (var touchEventType:String in touchEventTypes)

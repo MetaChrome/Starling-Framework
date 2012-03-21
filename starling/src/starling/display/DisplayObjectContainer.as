@@ -22,7 +22,8 @@ package starling.display
 	import starling.core.Starling;
 	import starling.textures.RenderTexture;
 	import starling.display.Image;
-	import starling.core.Util;
+	import starling.utils.getSmallestRect;
+    import starling.utils.getRectBounds;
     
     /**
      *  A DisplayObjectContainer represents a collection of display objects.
@@ -276,15 +277,14 @@ package starling.display
 	            }    
 				if(mScrollRect!=null)
 				{
-					getTransformationMatrix(targetSpace, sHelperMatrix);
-					transformCoords(sHelperMatrix, mScrollRect.x, mScrollRect.y, sHelperPoint);
-					var scrollRectBounds:Rectangle=new Rectangle();
-					scrollRectBounds.x = sHelperPoint.x;
-					scrollRectBounds.y = sHelperPoint.y;
-					transformCoords(sHelperMatrix, mScrollRect.x + mScrollRect.width, mScrollRect.y + mScrollRect.height, sHelperPoint);
-					scrollRectBounds.width = sHelperPoint.x - scrollRectBounds.x;
-					scrollRectBounds.height = sHelperPoint.y - scrollRectBounds.y;
-					Util.getSmallestRect(resultRect,scrollRectBounds,resultRect);
+                    var scrollRectBounds:Rectangle;
+                    if(targetSpace==this) {
+                        scrollRectBounds=scrollRect;
+                    } else {
+                        getTransformationMatrix(targetSpace, sHelperMatrix);
+                        scrollRectBounds=getRectBounds(scrollRect,sHelperMatrix);
+                    }
+					getSmallestRect(resultRect,scrollRectBounds,resultRect);
 				}
                 return resultRect;
 			}
@@ -328,7 +328,7 @@ package starling.display
 					var bounds:Rectangle=getBounds(support.rootDisplayObject);
 					if(support.previousScissorRect!=null) {
 						var previousScissorRect:Rectangle=support.previousScissorRect;
-						Util.getSmallestRect(bounds,previousScissorRect,bounds);
+						getSmallestRect(bounds,previousScissorRect,bounds);
 					}
 					support.previousScissorRect=bounds;
 					support.finishQuadBatch();

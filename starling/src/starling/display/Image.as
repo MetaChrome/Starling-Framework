@@ -8,14 +8,14 @@
 //
 // =================================================================================================
 
-package starling.display
-{
+package starling.display {
     import flash.display.Bitmap;
     import flash.geom.Point;
     import flash.geom.Rectangle;
     
     import starling.core.RenderSupport;
     import starling.textures.Texture;
+    import starling.textures.SubTexture;
     import starling.textures.TextureSmoothing;
     import starling.utils.VertexData;
     
@@ -65,6 +65,7 @@ package starling.display
                 throw new ArgumentError("Texture cannot be null");                
             }
         }
+        
         
         /** Creates an Image with a texture that is created from a bitmap object. */
         public static function fromBitmap(bitmap:Bitmap):Image
@@ -175,5 +176,17 @@ package starling.display
         {
             support.batchQuad(this, alpha, mTexture, mSmoothing);
         }
+        
+        public override function set scrollRect(value:Rectangle):void {
+            if(value==null) {
+                texture=(mTexture as SubTexture).parent;
+			} else if(mScrollRect!=null) {
+            	texture=new SubTexture((mTexture as SubTexture).parent,value);
+            } else {
+                texture=new SubTexture(mTexture,value);
+			}
+            readjustSize();
+            mScrollRect=value;
+		}
     }
 }

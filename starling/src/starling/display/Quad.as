@@ -18,6 +18,8 @@ package starling.display
     import starling.core.RenderSupport;
     import starling.utils.VertexData;
     import starling.utils.transformCoords;
+    import starling.utils.getRectBounds;
+    import starling.utils.getSmallestRect;
 
     /** A Quad represents a rectangle with a uniform color or a color gradient.
      *  
@@ -44,6 +46,7 @@ package starling.display
         private static var sPosition:Vector3D = new Vector3D();
         private static var sHelperPoint:Point = new Point();
         private static var sHelperMatrix:Matrix = new Matrix();
+        private static var sHelperRect:Rectangle=new Rectangle();
         
         /** Creates a quad with a certain size and color. The last parameter controls if the 
          *  alpha value should be premultiplied into the color values on rendering, which can
@@ -101,11 +104,19 @@ package starling.display
                     maxY = maxY > sHelperPoint.y ? maxY : sHelperPoint.y;
                 }
             }
-            
             resultRect.x = minX;
             resultRect.y = minY;
             resultRect.width  = maxX - minX;
             resultRect.height = maxY - minY;
+            if(mScrollRect) {
+                var scrollRectBounds:Rectangle;
+                if(targetSpace==this) {
+                    scrollRectBounds=scrollRect;
+                } else {
+               		scrollRectBounds=getRectBounds(mScrollRect,sHelperMatrix);
+                }
+                getSmallestRect(resultRect,scrollRectBounds,resultRect);
+            }
             
             return resultRect;
         }

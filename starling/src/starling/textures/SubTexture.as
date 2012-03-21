@@ -39,7 +39,18 @@ package starling.textures
         {
             mParent = parentTexture;
             mOwnsParent = ownsParent;
-            
+            if(region.x<0) {
+                region.x=0;
+            }
+            if(region.y<0) {
+                region.y=0;
+            }
+            if(region.right>parentTexture.width) {
+                region.right=parentTexture.width;
+            }
+            if(region.bottom>parentTexture.height) {
+                region.bottom=parentTexture.height;
+            }
             if (region == null) setClipping(new Rectangle(0, 0, 1, 1));
             else setClipping(new Rectangle(region.x / parentTexture.width,
                                            region.y / parentTexture.height,

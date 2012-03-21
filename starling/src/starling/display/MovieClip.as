@@ -16,6 +16,8 @@ package starling.display
     import starling.animation.IAnimatable;
     import starling.events.Event;
     import starling.textures.Texture;
+    import starling.textures.SubTexture;
+    import flash.geom.Rectangle;
     
     /** Dispatched whenever the movie has displayed its last frame. */
     [Event(name="complete", type="starling.events.Event")]
@@ -308,5 +310,21 @@ package starling.display
             else
                 return false;
         }
+        
+        public override function set scrollRect(value:Rectangle):void {
+            for(var texturesc:int=0;texturesc<mTextures.length;++texturesc) {
+                var currentTexture:Texture=mTextures[texturesc];
+                if(value==null) {
+                    mTextures[texturesc]=(currentTexture as SubTexture).parent;
+				} else if(mScrollRect!=null) {
+	                mTextures[texturesc]=new SubTexture((currentTexture as SubTexture).parent,value);
+				} else {
+                    mTextures[texturesc]=new SubTexture(currentTexture,value);
+				}
+            }
+            texture=mTextures[mCurrentFrame];
+            readjustSize();
+            mScrollRect=value;
+		}
     }
 }

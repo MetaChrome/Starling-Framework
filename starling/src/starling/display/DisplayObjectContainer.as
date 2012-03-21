@@ -261,7 +261,6 @@ package starling.display
 	            {
 	                var minX:Number = Number.MAX_VALUE, maxX:Number = -Number.MAX_VALUE;
 	                var minY:Number = Number.MAX_VALUE, maxY:Number = -Number.MAX_VALUE;
-	                
 	                for (var i:int=0; i<numChildren; ++i)
 	                {
 	                    mChildren[i].getBounds(targetSpace, resultRect);
@@ -284,6 +283,10 @@ package starling.display
                         getTransformationMatrix(targetSpace, sHelperMatrix);
                         scrollRectBounds=getRectBounds(scrollRect,sHelperMatrix);
                     }
+                    if(debug) {
+                        trace("scrollRectBounds"+scrollRectBounds.toString());
+                        trace("resultRect"+resultRect.toString());
+					}
 					getSmallestRect(resultRect,scrollRectBounds,resultRect);
 				}
                 return resultRect;
@@ -342,11 +345,11 @@ package starling.display
 					var stageScaleY:Number=yTransform.length;
 					var renderTexture:RenderTexture=new RenderTexture(mScrollRect.width*stageScaleX,mScrollRect.height*stageScaleY);
 					function drawingBlock():void {
-						this.mSupport.pushMatrix();
-						this.mSupport.scaleMatrix(scaleX,scaleY);
-						this.mSupport.translateMatrix(-mScrollRect.x,-mScrollRect.y);
-						render(this.mSupport,1.0);
-						this.mSupport.popMatrix();
+                        if(this.mSupport!=null) {
+							this.mSupport.scaleMatrix(stageScaleX,stageScaleY);
+							this.mSupport.translateMatrix(-mScrollRect.x,-mScrollRect.y);
+							render(this.mSupport,1.0);
+                        }
 					}
 					renderTexture.drawBundled(drawingBlock);
 					var image:Image=new Image(renderTexture);

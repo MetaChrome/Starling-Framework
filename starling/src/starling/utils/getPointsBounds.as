@@ -3,7 +3,7 @@ package starling.utils {
     public function getPointsBounds(points:*,resultRect:Rectangle):Rectangle {
 	    if(resultRect==null) resultRect=new Rectangle();
 	    var minX:Number=Number.MAX_VALUE,maxX:Number=Number.MIN_VALUE,
-	    	minY:Number=Number.MAX_VALUE,maxY:Number=Number.MAX_VALUE;
+	    	minY:Number=Number.MAX_VALUE,maxY:Number=Number.MIN_VALUE;
         points=(points as Vector.<*>);
 	    for(var pointsc:int=0;pointsc<points.length;++pointsc) {
 	        var point:Object=points[pointsc];

@@ -157,7 +157,7 @@ package starling.textures
                 
                 // draw new objects
                 if (drawingBlock != null)
-                    drawingBlock();
+                    drawingBlock.apply(this);
             }
             finally
             {

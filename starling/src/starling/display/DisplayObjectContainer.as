@@ -24,6 +24,7 @@ package starling.display
 	import starling.display.Image;
 	import starling.utils.getSmallestRect;
     import starling.utils.getRectBounds;
+    import starling.core.QuadBatch;
     
     /**
      *  A DisplayObjectContainer represents a collection of display objects.
@@ -67,6 +68,7 @@ package starling.display
         // members
         
         private var mChildren:Vector.<DisplayObject>;
+        private var mFlattenedContents:Vector.<QuadBatch>;
         
         /** Helper objects. */
         private static var sHelperMatrix:Matrix = new Matrix();
@@ -86,6 +88,7 @@ package starling.display
         /** Disposes the resources of all children. */
         public override function dispose():void
         {
+            unflatten();
             var numChildren:int = mChildren.length;
             
             for (var i:int=0; i<numChildren; ++i)
@@ -278,15 +281,13 @@ package starling.display
 				{
                     var scrollRectBounds:Rectangle;
                     if(targetSpace==this) {
-                        scrollRectBounds=scrollRect;
+                        scrollRectBounds=scrollRect.clone();
+                        scrollRectBounds.x=0;
+                        scrollRectBounds.y=0;
                     } else {
                         getTransformationMatrix(targetSpace, sHelperMatrix);
                         scrollRectBounds=getRectBounds(scrollRect,sHelperMatrix);
                     }
-                    if(debug) {
-                        trace("scrollRectBounds"+scrollRectBounds.toString());
-                        trace("resultRect"+resultRect.toString());
-					}
 					getSmallestRect(resultRect,scrollRectBounds,resultRect);
 				}
                 return resultRect;
@@ -317,6 +318,50 @@ package starling.display
             }
             
             return null;
+        }
+        
+        /** Indicates if the sprite was flattened. */
+        public function get isFlattened():Boolean { return mFlattenedContents != null; }
+        
+        /** Optimizes the sprite for optimal rendering performance. Changes in the
+         *  children of a flattened sprite will not be displayed any longer. For this to happen,
+         *  either call <code>flatten</code> again, or <code>unflatten</code> the sprite. */
+        public function flatten():void
+        {
+            dispatchEventOnChildren(new Event(Event.FLATTEN));
+            
+            if (mFlattenedContents == null)
+            {
+                mFlattenedContents = new <QuadBatch>[];
+                Starling.current.addEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
+            }
+            
+            QuadBatch.compile(this, mFlattenedContents);
+        }
+        
+        /** Removes the rendering optimizations that were created when flattening the sprite.
+         *  Changes to the sprite's children will become immediately visible again. */ 
+        public function unflatten():void
+        {
+            if (mFlattenedContents)
+            {
+                Starling.current.removeEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
+                var numBatches:int = mFlattenedContents.length;
+                
+                for (var i:int=0; i<numBatches; ++i)
+                    mFlattenedContents[i].dispose();
+                
+                mFlattenedContents = null;
+            }
+        }
+        
+        private function onContextCreated(event:Event):void
+        {
+            if (mFlattenedContents)
+            {
+                mFlattenedContents = new <QuadBatch>[];
+                flatten();
+            }
         }
         
         /** @inheritDoc */
@@ -359,19 +404,33 @@ package starling.display
 					return;
 				}
 			}
-            alpha *= this.alpha;
-            var numChildren:int = mChildren.length;
-            
-            for (var i:int=0; i<numChildren; ++i)
+            var i:int;
+            if (mFlattenedContents)
             {
-                var child:DisplayObject = mChildren[i];
-                if (child.alpha != 0.0 && child.visible && child.scaleX != 0.0 && child.scaleY != 0.0)
-                {
-                    support.pushMatrix();
-                    support.transformMatrix(child);
-                    child.render(support, alpha);
-                    support.popMatrix();
+                if(mScrollRect==null) {
+                	support.finishQuadBatch();
                 }
+                
+                alpha *= this.alpha;
+                var numBatches:int = mFlattenedContents.length;
+                
+                for (i=0; i<numBatches; ++i)
+                    mFlattenedContents[i].render(support.mvpMatrix, alpha);
+            } else {
+	            alpha *= this.alpha;
+	            var numChildren:int = mChildren.length;
+	            
+	            for (i=0; i<numChildren; ++i)
+	            {
+	                var child:DisplayObject = mChildren[i];
+	                if (child.alpha != 0.0 && child.visible && child.scaleX != 0.0 && child.scaleY != 0.0)
+	                {
+	                    support.pushMatrix();
+	                    support.transformMatrix(child);
+	                    child.render(support, alpha);
+	                    support.popMatrix();
+	                }
+	            }
             }
 			if(mScrollRect && !mRenderingScrollRectTexture) {
 				support.finishQuadBatch();

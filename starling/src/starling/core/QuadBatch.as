@@ -18,6 +18,7 @@ package starling.core
     import flash.display3D.IndexBuffer3D;
     import flash.display3D.VertexBuffer3D;
     import flash.geom.Matrix3D;
+    import flash.geom.Vector3D;
     import flash.utils.getQualifiedClassName;
     
     import starling.display.DisplayObject;
@@ -26,8 +27,10 @@ package starling.core
     import starling.display.Quad;
     import starling.errors.MissingContextError;
     import starling.textures.Texture;
+    import starling.textures.RenderTexture;
     import starling.textures.TextureSmoothing;
     import starling.utils.VertexData;
+    
     
     /** Optimizes rendering of a number of quads with an identical state.
      * 
@@ -236,7 +239,8 @@ package starling.core
             {
                 return quadBatchID; // ignore transparent objects, except root
             }
-            
+            var image:Image;
+            var quadBatch:QuadBatch;
             if (object is DisplayObjectContainer)
             {
                 var container:DisplayObjectContainer = object as DisplayObjectContainer;
@@ -248,17 +252,41 @@ package starling.core
                     var child:DisplayObject = container.getChildAt(i);
                     childMatrix.copyFrom(transformationMatrix);
                     RenderSupport.transformMatrixForObject(childMatrix, child);
-                    quadBatchID = compileObject(child, quadBatches, quadBatchID, 
-                                                childMatrix, alpha * child.alpha);
+                    if(child.scrollRect!=null) {
+                        var xTransform:Vector3D=childMatrix.deltaTransformVector(new Vector3D(0,1,0));
+                        var yTransform:Vector3D=childMatrix.deltaTransformVector(new Vector3D(1,0,0));
+                        var rootScaleX:Number=xTransform.length;
+                        var rootScaleY:Number=yTransform.length;
+                        var renderTexture:RenderTexture=new RenderTexture(child.width*rootScaleX,child.height*rootScaleY);
+	                    renderTexture.support.rootDisplayObject=child;
+						function drawingBlock():void {
+							this.support.scaleMatrix(rootScaleX,rootScaleY);
+							child.render(this.support,1.0);
+						}
+                       	renderTexture.drawBundled(drawingBlock);
+                        image=new Image(renderTexture);
+                		quadBatch = quadBatches[quadBatchID];
+                        quadBatch.syncBuffers();
+                        quadBatchID++;
+	                    if (quadBatches.length <= quadBatchID) 
+	                        quadBatches.push(new QuadBatch());
+	                    quadBatch = quadBatches[quadBatchID];
+	                    quadBatch.reset();
+                        childMatrix.appendScale(1/rootScaleX,1/rootScaleY,1);
+                        quadBatch.addQuad(image, child.alpha, renderTexture, image.smoothing, childMatrix);
+                    } else {
+	                    quadBatchID = compileObject(child, quadBatches, quadBatchID, 
+	                                                childMatrix, alpha * child.alpha);
+                    }
                 }
             }
             else if (object is Quad)
             {
                 var quad:Quad = object as Quad;
-                var image:Image = quad as Image;
+                image = quad as Image;
                 var texture:Texture = image ? image.texture : null;
                 var smoothing:String = image ? image.smoothing : null;
-                var quadBatch:QuadBatch = quadBatches[quadBatchID];
+                quadBatch = quadBatches[quadBatchID];
                 
                 if (quadBatch.isStateChange(quad, texture, smoothing))
                 {
@@ -281,7 +309,6 @@ package starling.core
             {
                 quadBatches[quadBatchID].syncBuffers();
                 
-                trace("disposed");
                 for (i=quadBatches.length-1; i>quadBatchID; --i)
                 {
                     quadBatches[i].dispose();

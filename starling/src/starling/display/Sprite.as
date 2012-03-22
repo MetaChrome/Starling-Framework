@@ -42,20 +42,12 @@ package starling.display
      */  
     public class Sprite extends DisplayObjectContainer
     {
-        private var mFlattenedContents:Vector.<QuadBatch>;
         private var mUseHandCursor:Boolean;
         
         /** Creates an empty sprite. */
         public function Sprite()
         {
             super();
-        }
-        
-        /** @inheritDoc */
-        public override function dispose():void
-        {
-            unflatten();
-            super.dispose();
         }
         
         /** Indicates if the mouse cursor should transform into a hand while it's over the sprite. 
@@ -75,66 +67,6 @@ package starling.display
         private function onTouch(event:TouchEvent):void
         {
             Mouse.cursor = event.interactsWith(this) ? MouseCursor.BUTTON : MouseCursor.AUTO;
-        }
-        
-        /** Optimizes the sprite for optimal rendering performance. Changes in the
-         *  children of a flattened sprite will not be displayed any longer. For this to happen,
-         *  either call <code>flatten</code> again, or <code>unflatten</code> the sprite. */
-        public function flatten():void
-        {
-            dispatchEventOnChildren(new Event(Event.FLATTEN));
-            
-            if (mFlattenedContents == null)
-            {
-                mFlattenedContents = new <QuadBatch>[];
-                Starling.current.addEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
-            }
-            
-            QuadBatch.compile(this, mFlattenedContents);
-        }
-        
-        /** Removes the rendering optimizations that were created when flattening the sprite.
-         *  Changes to the sprite's children will become immediately visible again. */ 
-        public function unflatten():void
-        {
-            if (mFlattenedContents)
-            {
-                Starling.current.removeEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
-                var numBatches:int = mFlattenedContents.length;
-                
-                for (var i:int=0; i<numBatches; ++i)
-                    mFlattenedContents[i].dispose();
-                
-                mFlattenedContents = null;
-            }
-        }
-        
-        private function onContextCreated(event:Event):void
-        {
-            if (mFlattenedContents)
-            {
-                mFlattenedContents = new <QuadBatch>[];
-                flatten();
-            }
-        }
-        
-        /** Indicates if the sprite was flattened. */
-        public function get isFlattened():Boolean { return mFlattenedContents != null; }
-        
-        /** @inheritDoc */
-        public override function render(support:RenderSupport, alpha:Number):void
-        {
-            if (mFlattenedContents)
-            {
-                support.finishQuadBatch();
-                
-                alpha *= this.alpha;
-                var numBatches:int = mFlattenedContents.length;
-                
-                for (var i:int=0; i<numBatches; ++i)
-                    mFlattenedContents[i].render(support.mvpMatrix, alpha);
-            }
-            else super.render(support, alpha);
         }
     }
 }

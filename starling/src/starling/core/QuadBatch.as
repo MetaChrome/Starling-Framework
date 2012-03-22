@@ -281,6 +281,7 @@ package starling.core
             {
                 quadBatches[quadBatchID].syncBuffers();
                 
+                trace("disposed");
                 for (i=quadBatches.length-1; i>quadBatchID; --i)
                 {
                     quadBatches[i].dispose();

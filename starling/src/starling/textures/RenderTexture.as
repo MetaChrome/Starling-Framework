@@ -216,5 +216,9 @@ package starling.textures
         { 
             return mActiveTexture.base; 
         }
+        
+        public function get support():RenderSupport {
+            return mSupport;
+		}
     }
 }

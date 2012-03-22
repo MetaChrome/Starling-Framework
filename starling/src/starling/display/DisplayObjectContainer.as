@@ -338,18 +338,17 @@ package starling.display
 					support.translateMatrix(-mScrollRect.x, -mScrollRect.y);
 					Starling.context.setScissorRectangle(bounds);
 				} else {
-					//not tested as it needs to be done with masks instead
 					mRenderingScrollRectTexture=true;
 					var xTransform:Point=sHelperMatrix.deltaTransformPoint(new Point(0,1));
 					var stageScaleX:Number=xTransform.length;
 					var stageScaleY:Number=yTransform.length;
 					var renderTexture:RenderTexture=new RenderTexture(mScrollRect.width*stageScaleX,mScrollRect.height*stageScaleY);
+                    renderTexture.support.rootDisplayObject=this;
 					function drawingBlock():void {
-                        if(this.mSupport!=null) {
-							this.mSupport.scaleMatrix(stageScaleX,stageScaleY);
-							this.mSupport.translateMatrix(-mScrollRect.x,-mScrollRect.y);
-							render(this.mSupport,1.0);
-                        }
+                        trace("drawingBlock");
+						this.support.scaleMatrix(stageScaleX,stageScaleY);
+						this.support.translateMatrix(-mScrollRect.x,-mScrollRect.y);
+						render(this.support,1.0);
 					}
 					renderTexture.drawBundled(drawingBlock);
 					var image:Image=new Image(renderTexture);
@@ -357,9 +356,11 @@ package starling.display
 					support.scaleMatrix(1/stageScaleX,1/stageScaleY);
 					image.render(support,alpha);
 					support.popMatrix();
+                    mRenderingScrollRectTexture=false;
 					return;
 				}
 			}
+            trace("render"+name);
             alpha *= this.alpha;
             var numChildren:int = mChildren.length;
             

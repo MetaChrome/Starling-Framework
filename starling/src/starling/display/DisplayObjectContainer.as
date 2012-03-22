@@ -345,7 +345,6 @@ package starling.display
 					var renderTexture:RenderTexture=new RenderTexture(mScrollRect.width*stageScaleX,mScrollRect.height*stageScaleY);
                     renderTexture.support.rootDisplayObject=this;
 					function drawingBlock():void {
-                        trace("drawingBlock");
 						this.support.scaleMatrix(stageScaleX,stageScaleY);
 						this.support.translateMatrix(-mScrollRect.x,-mScrollRect.y);
 						render(this.support,1.0);
@@ -360,7 +359,6 @@ package starling.display
 					return;
 				}
 			}
-            trace("render"+name);
             alpha *= this.alpha;
             var numChildren:int = mChildren.length;
             
